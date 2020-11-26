@@ -1,35 +1,341 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Shower Presentation Engine</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="node_modules/@shower/material/styles/styles.css">
-    <style>
-        .shower {
-            --slide-ratio: calc(16 / 9);
-        }
-    </style>
+  <title>Shower Presentation Engine</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="node_modules/@shower/material/styles/styles.css">
+  <style>
+    .shower {
+      --slide-ratio: calc(16 / 9);
+    }
+  </style>
 </head>
 <body class="shower list">
 
-    <header class="caption">
-        <h1>Shower Presentation Engine</h1>
-        <p>Yours Truly, Famous Inc.</p>
-    </header>
+<header class="caption">
+  <h1>CSS Houdini</h1>
+  <p>Practical reference</p>
+</header>
 
-    <section class="slide">
-        <!-- Create your first slide -->
-    </section>
+<section class="slide">
+  <h2>What is Houdini?</h2>
+  <p class="note">CSS Houdini - is a set of low-level APIs that exposes parts of the CSS engine, giving developers the
+    power to extend CSS by hooking into the styling and layout process of a browser’s rendering engine.</p>
+</section>
 
-    <footer class="badge">
-        <a href="https://github.com/shower/shower">Fork me on GitHub</a>
-    </footer>
+<section class="slide">
+  <h2>Parts Houdini</h2>
+  <ol>
+    <li>Layout API</li>
+    <li>Paint API</li>
+    <li>Animation API</li>
+  </ol>
+</section>
 
-    <div class="progress"></div>
+<section class="slide">
+  <h2>Low level parts</h2>
+  <ol>
+    <li>Typed object model API(TOM)</li>
+    <li>Custom properties and values API</li>
+    <li>Font Metrics API</li>
+    <li>Worklets</li>
+  </ol>
+</section>
 
-    <script src="node_modules/@shower/core/dist/shower.js"></script>
-    <!-- Copyright © 2020 Yours Truly, Famous Inc. -->
+<section class="slide">
+  <h2>TOM. Classical change styles with JavaScript</h2>
+  <pre lang="js">
+      <code>
+        const element = document.getElementById('element');
+        element.style.fontSize = '43px';
+      </code>
+  </pre>
+</section>
+
+<section class="slide">
+  <h2>With TOM we can show semantic meaning to CSS values by exposing them as typed JavaScript objects</h2>
+  <pre lang="js">
+      <code>
+        CSSUnitValue: {value: 14, unit: "px"}
+      </code>
+  </pre>
+</section>
+
+<section class="slide">
+  <h2>Work with TOM</h2>
+  <p class="note">If we have read values:</p>
+  <code>
+    element.computedStyleMap().get("font-size");
+  </code>
+  <p class="note">If we have write values:</p>
+  <code>
+    element.attributeStyleMap.set("font-size", CSS.em(2));
+  </code>
+</section>
+
+<section class="slide">
+  <h2>attributeStyleMap methods</h2>
+  <ul>
+    <li>clear: removes all inline styles
+    </li>
+    <li>
+      delete: removes a specified CSS property and its value from inline styles
+    </li>
+    <li>has: returns a boolean if a specified CSS property is set</li>
+    <li>append: adds an additional value to a property that supports multiple values</li>
+  </ul>
+</section>
+<section class="slide">
+  <h2>Global CSS Object</h2>
+  <img src="TOM.png" alt="">
+</section>
+
+<section class="slide">
+  <h2>Custom Properties And Values API</h2>
+  <pre>
+    <code>
+CSS.registerProperty({
+  name: "--colorPrimary",
+  syntax: "&lt;color&gt;",
+  inherits: false,
+  initialValue: "blue",
+});
+    </code>
+  </pre>
+</section>
+
+<section class="slide">
+  <h2>The same in CSS</h2>
+  <pre>
+    <code>
+@property --colorPrimary {
+  syntax: "&lt;color&gt;";
+  inherits: false;
+  initial-value: blue;
+}
+    </code>
+  </pre>
+</section>
+
+<section class="slide">
+  <h2>Worklets</h2>
+  <p>Worklets are scripts that run during render and are independent of the main JavaScript environment.</p>
+</section>
+<section class="slide">
+  <h2>Paint API</h2>
+  <p>Steps:</p>
+  <ul>
+    <li>Write and register a Paint Worklet using the <code>registerPaint</code> function</li>
+    <li>Call the Worklet in HTML file or main JavaScript file using <code>CSS.paintWorklet.addModule</code> function
+    </li>
+    <li>Use the <code>paint()</code> function in CSS with a Worklet name and optional input arguments</li>
+  </ul>
+</section>
+<section class="slide">
+  <pre>
+    <code>registerPaint("paintWorketExample", class {</code>
+  <code>  static get inputProperties() { return ["--myVariable"]; }</code>
+  <code>  static get inputArguments() { return ["&lt;color&gt;"]; }</code>
+  <code>  static get contextOptions() { return {alpha: true}; }</code>
+   <code> </code>
+  <code>  paint(ctx, size, properties, args) {</code>
+  <code>  /* ... */</code>
+  <code>  }</code>
+<code>});</code>
+  </pre>
+</section>
+
+<section class="slide">
+  <h2>Description for registerPaint</h2>
+  <ul>
+    <li>
+      <code>inputProperties</code>: An array of CSS custom properties that the Worklet will keep track of. This array
+      represents dependencies of a paint worklet.
+    </li>
+    <li>
+      <code>inputArguments</code>: An array of input arguments that can be passed from paint function from inside the
+      CSS
+    </li>
+    <li>
+      <code>contextOptions</code>: allow or disallow opacity for colors. If set to false, all colors will be displayed
+      with full opacity
+    </li>
+    <li>
+      <code>paint</code>: the main function that provides the following arguments:
+    </li>
+  </ul>
+</section>
+<section class="slide">
+  <h2>Description for paint method</h2>
+  <ul>
+    <li>
+      <code>ctx</code>: 2D drawing context, almost identical to Canvas API’s 2D drawing context.
+    </li>
+    <li>
+      <code>size</code>: an object containing the width and height of the element. Values are determined by the layout
+      rendering process. Canvas size is the same as the actual size of the element
+    </li>
+    <li>
+      <code>properties</code>: input variables defined in <code>inputProperties</code>
+    </li>
+    <li>
+      <code>args</code>: an array of input arguments passed in <code>paint</code> function in CSS
+    </li>
+  </ul>
+</section>
+
+
+<section class="slide">
+  <h2>Adding worklet to page</h2>
+  <pre>
+    <code>CSS.paintWorklet.addModule("path/to/worklet/file.js");</code>
+  </pre>
+  <p>
+    and use it in CSS
+  </p>
+  <pre>
+    <code>.exampleElement {</code>
+    <code>  background-image: paint(paintWorketExample, blue);</code>
+    <code>}</code>
+  </pre>
+</section>
+
+<section class="slide">
+  <h2>
+    <a href="https://css-houdini.rocks/ripple/">Example</a>
+  </h2>
+</section>
+
+
+
+<section class="slide">
+  <h2>Layout API</h2>
+</section>
+
+<section class="slide">
+  <pre style="overflow: scroll; width: 100%">
+    <code>registerLayout('exampleLayout', class {</code>
+  <code>  static get inputProperties() { return ['--exampleVariable']; }</code>
+  <code>  static get childrenInputProperties() { return ['--exampleChildVariable']; }</code>
+  <code>  static get layoutOptions() {</code>
+<code>    return {</code>
+<code>      childDisplay: 'normal',</code>
+<code>      sizing: 'block-like'</code>
+<code>    };</code>
+<code>  }</code>
+
+  </pre>
+</section>
+<section class="slide">
+  <pre>
+
+<code>  intrinsicSizes(children, edges, styleMap) {</code>
+<code>    /* ... */</code>
+<code>  }</code>
+<code>  layout(children, edges, constraints, styleMap, breakToken) {</code>
+<code>    /* ... */</code>
+<code>  }</code>
+<code>});</code>
+  </pre>
+</section>
+
+<section class="slide">
+  <ul>
+    <li>
+      <code>childrenInputProperties</code>: An array of CSS custom properties that the Worklet will keep track of that
+      belong to child elements of a Parent Layout element, i.e. the children of the elements that set this layout.
+
+    </li>
+    <li>
+      <code>layoutOptions</code>: defines the following layout properties:
+      <ul>
+
+        <li>
+          <code>childDisplay</code>: can have a pre-defined value of block or normal. Determines if the boxes will be
+          displayed as blocks or inline
+        </li>
+        <li>
+          <code>sizing</code>: can have a pre-defined value of block-like or manual. It tells the browser to either
+          pre-calculate the size or not to pre-calculate (unless a size is explicitly set), respectively
+        </li>
+      </ul>
+    </li>
+  </ul>
+</section>
+
+<section class="slide">
+  <ul>
+    <li>
+      <code>intrinsicSizes</code>: defines how a box or its content fits into a layout context:
+      <ul>
+
+        <li>
+          <code>children</code>: child elements of a Parent Layout element, i.e. the children of the element that call
+          this layout
+        </li>
+        <li>
+          <code>edges</code>: Layout Edges of a box
+        </li>
+        <li>
+          <code>styleMap</code>: typed OM styles of a box
+        </li>
+      </ul>
+    </li>
+  </ul>
+</section>
+
+<section class="slide">
+  <ul>
+    <li>
+      <code>layout</code>: the main function that performs a layout:
+      <ul>
+
+        <li>
+          <code>children</code>: child elements of a Parent Layout element, i.e. the children of the element that call
+          this layout
+        </li>
+        <li>
+          <code>edges</code>: Layout Edges of a box
+        </li>
+        <li>
+          <code>constraints</code>: constraints of a Parent Layout
+        </li>
+        <li>
+          <code>styleMap</code>: typed OM styles of a box
+        </li>
+        <li>
+          <code>breakToken</code>: break token used to resume a layout in case of pagination or printing.
+        </li>
+      </ul>
+    </li>
+  </ul>
+</section>
+<section class="slide">
+  <pre>
+    <code>.exampleElement {</code>
+  <code>  display: layout(exampleLayout);</code>
+  <code>  --grid-col: 5;</code>
+    <code>}</code>
+</pre>
+</section>
+<section class="slide">
+  <h2>Example</h2>
+  <img src="layout.gif" alt="" class="cover">
+</section>
+<section class="slide">
+  <h2>Thanks and questions</h2>
+</section>
+
+
+<footer class="badge">
+  <a href="https://github.com/shower/shower">Fork me on GitHub</a>
+</footer>
+
+<div class="progress"></div>
+
+<script src="node_modules/@shower/core/dist/shower.js"></script>
+<!-- Copyright © 2020 Yours Truly, Famous Inc. -->
 
 </body>
 </html>
